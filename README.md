@@ -40,7 +40,7 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ## Deploy to Railway
 
-### 1. Push to GitHub
+### 1. Push to GitHub 
 
 ```bash
 git init
