@@ -15,6 +15,7 @@ require('dotenv').config({ path: '.env.local' });
 const SAFE_EVENTS_API = process.env.SAFE_EVENTS_API || 'https://safe-events.safe.global';
 const PUBLIC_URL = process.env.PUBLIC_URL;
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
+const SAFE_API_KEY = process.env.SAFE_API_KEY; // Optional - may be needed for authentication
 
 if (!PUBLIC_URL) {
   console.error('❌ PUBLIC_URL is required. Set it in .env.local');
@@ -26,6 +27,11 @@ if (!WEBHOOK_SECRET) {
   process.exit(1);
 }
 
+if (!SAFE_API_KEY) {
+  console.warn('⚠️  SAFE_API_KEY not set. Registration may fail if authentication is required.');
+  console.warn('   Get your API key from: https://safe.global/dashboard');
+}
+
 async function registerWebhook() {
   const webhookUrl = `${PUBLIC_URL}/api/webhook`;
   
@@ -34,6 +40,16 @@ async function registerWebhook() {
   console.log('API Endpoint:', SAFE_EVENTS_API);
 
   try {
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+
+    // Add Safe API key if provided
+    if (SAFE_API_KEY) {
+      headers['Authorization'] = `Bearer ${SAFE_API_KEY}`;
+      console.log('🔑 Using Safe API key for authentication');
+    }
+
     const response = await axios.post(
       `${SAFE_EVENTS_API}/webhooks`,
       {
@@ -42,11 +58,7 @@ async function registerWebhook() {
         chainIds: [1, 11155111], // Mainnet and Sepolia
         eventTypes: ['ALL'], // All event types
       },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
+      { headers }
     );
 
     console.log('✅ Webhook registered successfully!');
